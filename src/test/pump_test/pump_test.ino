@@ -11,17 +11,17 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  //Toggle relay after 2s
+  //Toggle relay after 5s
+  //Connect pump to circuit and see if it gets on/off in 5s intervals
   switch_relay();
 
   //Serial print the count to see whether aduino gets reset during the operation. Open serial monitor to observe count
   Serial.println(count++);
-
 }
 
 void switch_relay(){
   digitalWrite(relay_pin, HIGH);
-  delay(2000);
+  delay(5000);
   digitalWrite(relay_pin, LOW);
-  delay(2000);
+  delay(5000);
 }
