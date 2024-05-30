@@ -1,11 +1,13 @@
 int raw_moisture_sensor_val = 0; //value for storing raw moisture value
 int smooth_moisture_sensor_val = 0; //value for storing filtered moisture value
-float lpf_beta = 0.025; // 0<ß<1
+float lpf_beta = 0.015; // 0<ß<1
 int soilPin = A0;//Declare a variable for the soil moisture sensor
 int soilPower = 7;//Variable for Soil moisture Power
 //Rather than powering the sensor through the 3.3V or 5V pins,
 //we'll use a digital pin to power the sensor. This will
 //prevent corrosion of the sensor as it sits in the soil.
+
+bool first_read = true;
 
 int readSoil();
 
@@ -23,11 +25,17 @@ void loop()
   //get soil moisture value from the function below
   raw_moisture_sensor_val = readSoil();
   // LPF: Y(n) = (1-ß)*Y(n-1) + (ß*X(n))) = Y(n-1) - (ß*(Y(n-1)-X(n)));
-  smooth_moisture_sensor_val = smooth_moisture_sensor_val - (lpf_beta * (smooth_moisture_sensor_val - raw_moisture_sensor_val));
+
+  // if (first_read){
+  //   smooth_moisture_sensor_val = raw_moisture_sensor_val;
+  //   first_read = false;
+  // }else{
+    smooth_moisture_sensor_val = smooth_moisture_sensor_val - (lpf_beta * (smooth_moisture_sensor_val - raw_moisture_sensor_val));
+  // }
   Serial.print(raw_moisture_sensor_val);
   Serial.print("  ");
   Serial.print(smooth_moisture_sensor_val);
-  delay(1000);//take a reading every second
+  Serial.println();
 }
 
 //This is a function used to get the soil moisture content
