@@ -9,12 +9,15 @@ int soil_power = 7;//Variable for Soil moisture Power
 //prevent corrosion of the sensor as it sits in the soil.
 unsigned long previous_millis = 0;
 // int pump_current_millis = 0;
+unsigned long time_difference = 3600000;
+const int push_button_pin = 2;
 
 int read_soil_moisture();
 int get_filtered_moisture_value(int raw_moisture_sensor_value, int previous_filtered_value);
-void run_pump();
+void run_pump(bool button_press=false);
 bool power_on_moisture_sensor();
 bool power_off_moisture_sensor();
+bool check_motor_on_push_button_state();
 
 void setup() {
   // put your setup code here, to run once:
@@ -24,6 +27,7 @@ void setup() {
   digitalWrite(relay_pin, LOW);//Set to LOW so no power is flowing through the sensor
   pinMode(soil_power, OUTPUT);//Set D7 as an OUTPUT
   digitalWrite(soil_power, LOW);//Set to LOW so no power is flowing through the sensor
+  pinMode(push_button_pin, INPUT);
   previous_millis = millis();
 }
 
@@ -34,9 +38,18 @@ void loop() {
   //1. check moisture sensor once in 60 mins
   //2. if moisture value < 800
   //3. switch on pump for 20 seconds
+  
 
-    
-  if(millis() - previous_millis > 3600000){
+  if (check_motor_on_push_button_state()){
+    run_pump(true);
+    return;
+  }else{
+    digitalWrite(relay_pin, LOW);
+  }
+
+  // Serial.println("Statements Below");
+
+  if(millis() - previous_millis > time_difference){
     //60mins = 3600000 milliseconds
 
     Serial.print("duration > 60 mins, duration = ");
@@ -45,6 +58,7 @@ void loop() {
     //Power on moisture sensor
     int filtered_moisture_value = 0;
     bool moisture_sensor_on = power_on_moisture_sensor();
+    Serial.println(moisture_sensor_on);
 
     if (moisture_sensor_on){
 
@@ -55,17 +69,17 @@ void loop() {
 
       while(count < 300){
         int raw_moisture_value = read_soil_moisture();
-        // Serial.print("raw value: ");
-        // Serial.println(raw_moisture_value);
+        Serial.print("raw value: ");
+        Serial.println(raw_moisture_value);
         filtered_moisture_value = get_filtered_moisture_value(raw_moisture_value, filtered_moisture_value);
-        // Serial.print("filtered value: ");
-        // Serial.println(filtered_moisture_value);
+        Serial.print("filtered value: ");
+        Serial.println(filtered_moisture_value);
         count++;
       }
         
     }
 
-    bool moisture_sensor_off = power_off_moisture_sensor();
+    // bool moisture_sensor_off = power_off_moisture_sensor();
 
     Serial.print("filtered_moisture_value: ");
     Serial.println(filtered_moisture_value);
@@ -74,6 +88,7 @@ void loop() {
 
       //pump on for 20 seconds
       run_pump();
+      // Serial.print("Run pump fn ");
 
     }else{
       Serial.print("moisture value = ");
@@ -93,7 +108,7 @@ bool power_on_moisture_sensor(){
   unsigned long moisture_current_millis = millis();
   do{
     //Do nothing
-  }while((millis()-moisture_current_millis)<10);
+  }while((millis()-moisture_current_millis)<100);
   // wait 10 milliseconds  
   return true;
 
@@ -120,22 +135,31 @@ int get_filtered_moisture_value(int raw_moisture_sensor_value, int previous_filt
 
 }
 
-void run_pump(){
+void run_pump(bool button_press){
+
+  if(button_press){
+    digitalWrite(relay_pin, HIGH);
+    return;
+  }
 
   unsigned long pump_current_millis = 0;
   pump_current_millis = millis();
   
   do{
     digitalWrite(relay_pin, HIGH);
-    Serial.println("pump on");
-    Serial.print("millis: ");
-    Serial.println(millis());
-    Serial.print("pump_current_millis: ");
-    Serial.println(pump_current_millis);
-    Serial.print("difference: ");
-    Serial.println(millis()- pump_current_millis);
+    // Serial.println("pump on");
+    // Serial.print("millis: ");
+    // Serial.println(millis());
+    // Serial.print("pump_current_millis: ");
+    // Serial.println(pump_current_millis);
+    // Serial.print("difference: ");
+    // Serial.println(millis()- pump_current_millis);
   }while((millis()-pump_current_millis)<10000);
   digitalWrite(relay_pin, LOW);
   Serial.println("pump off");
 
+}
+
+bool check_motor_on_push_button_state(){
+  return digitalRead(push_button_pin);
 }
