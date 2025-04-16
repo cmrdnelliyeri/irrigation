@@ -10,6 +10,7 @@ int soil_power = 7;//Variable for Soil moisture Power
 unsigned long previous_millis = 0;
 // int pump_current_millis = 0;
 unsigned long time_difference = 3600000;
+// unsigned long time_difference = 10000;
 const int push_button_pin = 2;
 
 int read_soil_moisture();
@@ -84,7 +85,7 @@ void loop() {
     Serial.print("filtered_moisture_value: ");
     Serial.println(filtered_moisture_value);
 
-    if (filtered_moisture_value < 600){
+    if (filtered_moisture_value < 825){
 
       //pump on for 20 seconds
       run_pump();
